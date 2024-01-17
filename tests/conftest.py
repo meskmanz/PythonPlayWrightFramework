@@ -4,6 +4,7 @@ from playwright.sync_api import sync_playwright, expect
 from data.environment import Environment
 from pages.LoginPage import LoginPage
 from pages.ProductsPage import ProductsPage
+from utils.file import add_allure_env
 
 
 def pytest_addoption(parser):
@@ -22,10 +23,13 @@ def browser(request):
     with sync_playwright() as playwright:
         if request.config.getoption("bn") == 'chromium':
             browser = playwright.chromium.launch(headless=headless, slow_mo=slow_mo)
+            add_allure_env('Browser', 'Chromium')
         elif request.config.getoption("bn") == 'firefox':
             browser = playwright.firefox.launch(headless=headless, slow_mo=slow_mo)
+            add_allure_env('Browser', 'Firefox')
         else:
             browser = playwright.chromium.launch(headless=headless, slow_mo=slow_mo)
+            add_allure_env('Browser', 'Chromium')
         context = browser.new_context()
         page = context.new_page()
         yield page
