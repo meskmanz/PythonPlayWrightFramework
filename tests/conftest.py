@@ -15,7 +15,9 @@ def pytest_addoption(parser):
 @fixture()
 def setup(request):
     url = 'https://www.saucedemo.com'
-    headless = eval(request.config.getoption("h"))
+    headless = request.config.getoption("h")
+    if not isinstance(headless, bool):
+        headless = eval(headless)
     slow_mo = request.config.getoption("slow")
     with sync_playwright() as playwright:
         if request.config.getoption("bn") == 'chromium':

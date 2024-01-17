@@ -5,3 +5,4 @@ class CartPage(BasePage):
     def __init__(self, page):
         super().__init__(page)
         self.cart_item = page.locator('.cart_item')
+        self.checkout_btn = page.locator('#checkout')

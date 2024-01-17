@@ -2,6 +2,7 @@ import pytest
 from playwright.sync_api import expect
 
 from pages.CartPage import CartPage
+from pages.CheckoutPage import CheckoutPage
 from pages.ProductsPage import ProductsPage
 
 
@@ -15,12 +16,15 @@ class TestProductsPage:
         pass
 
     def test_add_products_to_cart(self, setup):
+        text = 'Your order has been dispatched, and will arrive just as fast as the pony can get there!'
         products_page = ProductsPage(setup)
-        products = products_page.add_to_cart_btn.all()[:3]
-        for item in products:
-            item.click()
+        products_page.add_products_to_card(3)
         expect(products_page.shopping_cart_badge).to_have_text(str(3))
         products_page.shopping_cart_link.click()
         cart_page = CartPage(setup)
-        expect(cart_page.cart_item).to_have_count(len(products))
-        pass
+        expect(cart_page.cart_item).to_have_count(3)
+        cart_page.checkout_btn.click()
+        checkout_page = CheckoutPage(setup)
+        checkout_page.fill('Joe', 'Doe', 12345)
+        checkout_page.finish_btn.click()
+        expect(checkout_page.order_dispatched_msg).to_have_text(text)
