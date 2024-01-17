@@ -1,6 +1,7 @@
 from _pytest.fixtures import fixture
 from playwright.sync_api import sync_playwright, expect
 
+from data.environment import Environment
 from pages.LoginPage import LoginPage
 from pages.ProductsPage import ProductsPage
 
@@ -13,8 +14,7 @@ def pytest_addoption(parser):
 
 
 @fixture()
-def setup(request):
-    url = 'https://www.saucedemo.com'
+def browser(request):
     headless = request.config.getoption("h")
     if not isinstance(headless, bool):
         headless = eval(headless)
@@ -28,15 +28,20 @@ def setup(request):
             browser = playwright.chromium.launch(headless=headless, slow_mo=slow_mo)
         context = browser.new_context()
         page = context.new_page()
-        page.goto(url)
         yield page
         context.close()
         browser.close()
 
 
+@fixture()
+def page(browser):
+    browser.goto(Environment().get_base_url())
+    return browser
+
+
 @fixture(autouse=False)
-def login(setup):
-    login_page = LoginPage(setup)
+def login(page):
+    login_page = LoginPage(page)
     login_page.login('standard_user', 'secret_sauce')
-    products_page = ProductsPage(setup)
+    products_page = ProductsPage(page)
     expect(products_page.product_label).to_be_visible()
