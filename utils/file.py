@@ -7,22 +7,28 @@ def get_project_root() -> Path:
 
 
 def add_allure_env(key, value):
-    reports_directory = os.path.join(get_project_root(), 'allure-results')
-    path = os.path.join(reports_directory, 'environment.properties')
-    if not os.path.exists(reports_directory):
-        os.makedirs(reports_directory)
-    if not read_allure_env(path, key):
+    path = os.path.join(get_project_root(), 'allure-results', 'environment.properties')
+    if not os.path.exists(path):
         with open(path, 'a') as f:
             f.write(f'{key} = {value}\n')
+    else:
+        dict_env = read_allure_env(path)
+        if key in dict_env:
+            if dict_env[key] != value:
+                dict_env[key] = value
+                with open(path, 'w') as f:
+                    for item in dict_env:
+                        f.write(f'{item} = {dict_env[item]}\n')
+
+        else:
+            with open(path, 'a') as f:
+                f.write(f'{key} = {value}\n')
 
 
-def read_allure_env(path, key):
-    try:
-        with open(path, 'r') as f:
-            data = f.readlines()
-        for item in data:
-            if item.split(' = ')[0] == key:
-                return True
-    except FileNotFoundError:
-        return False
-    return False
+def read_allure_env(path):
+    values = {}
+    with open(path, 'r') as f:
+        data = f.readlines()
+    for item in data:
+        values[item.split(' = ')[0]] = item.split(' = ')[1]
+    return values
